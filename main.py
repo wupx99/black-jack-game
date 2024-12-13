@@ -11,6 +11,10 @@ class BlackjackGame:
         self.master.geometry("800x600")
         self.master.configure(bg='#013220')  # 设置浅绿色背景
         
+        self.score = 0
+        self.chips = 100  # 初始筹码数量
+        self.bet = 10  # 默认下注金额
+        
         self.suits = ['H', 'D', 'C', 'S']
         self.values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
         self.deck = [f"{v}{s}" for s in self.suits for v in self.values]
@@ -49,6 +53,17 @@ class BlackjackGame:
         self.player_total_label = tk.Label(score_frame, text="Your total:", font=('Arial', 14))
         self.player_total_label.pack()
 
+        # Add chip display and bet input
+        self.chips_label = tk.Label(score_frame, text=f"Chips: {self.chips}", font=('Arial', 14))
+        self.chips_label.pack()
+
+        bet_frame = tk.Frame(score_frame)
+        bet_frame.pack()
+        tk.Label(bet_frame, text="Bet:", font=('Arial', 14)).pack(side=tk.LEFT)
+        self.bet_entry = tk.Entry(bet_frame, width=5)
+        self.bet_entry.insert(0, str(self.bet))
+        self.bet_entry.pack(side=tk.LEFT)
+
         # Button frame (bottom right)
         button_frame = tk.Frame(self.master)
         button_frame.pack(side=tk.BOTTOM, anchor='se', padx=20, pady=20)
@@ -62,7 +77,8 @@ class BlackjackGame:
 
         self.new_game_button = tk.Button(button_frame, text="New Game", command=self.new_game, 
                                         width=button_width, height=button_height)
-        self.new_game_button.grid(row=0, column=1, padx=5, pady=5)  
+        self.new_game_button.grid(row=0, column=1, padx=5, pady=5)
+
 
     def new_game(self):
         self.deck = [f"{v}{s}" for s in self.suits for v in self.values]
@@ -79,6 +95,14 @@ class BlackjackGame:
         
         # 使用动画效果发牌
         self.animate_deal()
+        
+        self.update_display()
+        
+    def update_display(self):
+        player_total = self.calculate_hand(self.player_hand)
+        self.player_total_label.config(text=f"your points: {player_total}")
+        self.score_label.config(text=f"score: {self.score}")
+        self.chips_label.config(text=f"money: {self.chips}")
     
     def animate_deal(self, player_count=0, dealer_count=0):
         if player_count < 3:
@@ -133,6 +157,16 @@ class BlackjackGame:
         self.score_label.config(text=f"Score: {self.score}")
 
     def play(self):
+        try:
+            self.bet = int(self.bet_entry.get())
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid bet amount")
+            return
+
+        if self.bet > self.chips:
+            messagebox.showerror("Error", "Bet amount cannot exceed your chip count")
+            return
+
         player_total = self.calculate_hand(self.player_hand)
         dealer_total = self.calculate_hand(self.dealer_hand)
 
@@ -140,16 +174,16 @@ class BlackjackGame:
             result = "Both busted! It's a tie!"
         elif player_total > 21:
             result = "You busted!"
-            self.score -= 1
+            self.chips -= self.bet
         elif dealer_total > 21:
             result = "Dealer busted! You win!"
-            self.score += 1
+            self.chips += self.bet
         elif player_total > dealer_total:
             result = "You win!"
-            self.score += 1
+            self.chips += self.bet
         elif player_total < dealer_total:
             result = "You lose!"
-            self.score -= 1
+            self.chips -= self.bet
         else:
             result = "It's a tie!"
 
@@ -159,8 +193,13 @@ class BlackjackGame:
         for card in self.dealer_hand:
             tk.Label(self.dealer_frame, image=self.card_images[card]).pack(side=tk.LEFT)
 
-        messagebox.showinfo("Game Result", f"{result}\nYour total: {player_total}\nDealer's total: {dealer_total}")
+        messagebox.showinfo("Game Result", f"{result}\nYour total: {player_total}\nDealer's total: {dealer_total}\nCurrent chips: {self.chips}")
         self.update_display()
+
+        if self.chips <= 0:
+            messagebox.showinfo("Game Over", "You're out of chips! Game over.")
+            self.chips = 100  # Reset chips
+        
         self.new_game()
 
 if __name__ == "__main__":
