@@ -11,14 +11,12 @@ class BlackjackGame:
         self.master.geometry("800x600")
         self.master.configure(bg='#013220')  # 设置浅绿色背景
         
-        self.score = 0
         self.chips = 100  # 初始筹码数量
         self.bet = 10  # 默认下注金额
         
         self.suits = ['H', 'D', 'C', 'S']
         self.values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
         self.deck = [f"{v}{s}" for s in self.suits for v in self.values]
-        self.score = 0
         
         self.player_hand = []
         self.dealer_hand = []
@@ -47,9 +45,6 @@ class BlackjackGame:
         score_frame = tk.Frame(self.master)
         score_frame.pack(expand=True)
 
-        self.score_label = tk.Label(score_frame, text=f"Score: {self.score}", font=('Arial', 16))
-        self.score_label.pack()
-
         self.player_total_label = tk.Label(score_frame, text="Your total:", font=('Arial', 14))
         self.player_total_label.pack()
 
@@ -66,7 +61,7 @@ class BlackjackGame:
 
         # Button frame (bottom right)
         button_frame = tk.Frame(self.master)
-        button_frame.pack(side=tk.BOTTOM, anchor='se', padx=20, pady=20)
+        button_frame.pack(side=tk.BOTTOM, anchor='center', padx=20, pady=20)
 
         button_width = 10
         button_height = 2
@@ -101,7 +96,6 @@ class BlackjackGame:
     def update_display(self):
         player_total = self.calculate_hand(self.player_hand)
         self.player_total_label.config(text=f"your points: {player_total}")
-        self.score_label.config(text=f"score: {self.score}")
         self.chips_label.config(text=f"money: {self.chips}")
     
     def animate_deal(self, player_count=0, dealer_count=0):
@@ -154,7 +148,6 @@ class BlackjackGame:
     def update_display(self):
         player_total = self.calculate_hand(self.player_hand)
         self.player_total_label.config(text=f"Your total: {player_total}")
-        self.score_label.config(text=f"Score: {self.score}")
 
     def play(self):
         try:
