@@ -9,6 +9,7 @@ class BlackjackGame:
         self.master = master
         self.master.title("Blackjack Game")
         self.master.geometry("800x600")
+        self.master.configure(bg='#013220')  # 设置浅绿色背景
         
         self.suits = ['H', 'D', 'C', 'S']
         self.values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
@@ -70,12 +71,39 @@ class BlackjackGame:
         self.player_hand = []
         self.dealer_hand = []
         
-        for _ in range(3):
-            self.player_hand.append(self.draw_card())
-            self.dealer_hand.append(self.draw_card())
+        # 清除之前的卡牌
+        for widget in self.player_frame.winfo_children():
+            widget.destroy()
+        for widget in self.dealer_frame.winfo_children():
+            widget.destroy()
         
-        self.update_display()
-
+        # 使用动画效果发牌
+        self.animate_deal()
+    
+    def animate_deal(self, player_count=0, dealer_count=0):
+        if player_count < 3:
+            self.player_hand.append(self.draw_card())
+            self.add_card_to_frame(self.player_frame, self.player_hand[-1])
+            self.master.after(500, self.animate_deal, player_count + 1, dealer_count)
+        elif dealer_count < 3:
+            self.dealer_hand.append(self.draw_card())
+            if dealer_count == 0:
+                self.add_card_to_frame(self.dealer_frame, self.dealer_hand[-1])
+            else:
+                self.add_card_to_frame(self.dealer_frame, 'BACK')
+            self.master.after(500, self.animate_deal, player_count, dealer_count + 1)
+        else:
+            self.update_display()
+    
+    def add_card_to_frame(self, frame, card):
+        if card == 'BACK':
+            image = self.card_back
+        else:
+            image = self.card_images[card]
+        label = tk.Label(frame, image=image)
+        label.pack(side=tk.LEFT)
+        frame.update()
+    
     def draw_card(self):
         return self.deck.pop()
 
@@ -100,22 +128,6 @@ class BlackjackGame:
         return total
 
     def update_display(self):
-        for widget in self.player_frame.winfo_children():
-            widget.destroy()
-        for widget in self.dealer_frame.winfo_children():
-            widget.destroy()
-
-        for card in self.player_hand:
-            # tk.Label(self.player_frame, image=self.card_images[card]).pack(side=tk.LEFT)
-            tk.Label(self.player_frame, image=self.card_back).pack(side=tk.LEFT)
-
-        for i, card in enumerate(self.dealer_hand):
-            if i == 0:
-                # tk.Label(self.dealer_frame, image=self.card_images[card]).pack(side=tk.LEFT)
-                tk.Label(self.dealer_frame, image=self.card_back).pack(side=tk.LEFT)
-            else:
-                tk.Label(self.dealer_frame, image=self.card_back).pack(side=tk.LEFT)
-
         player_total = self.calculate_hand(self.player_hand)
         self.player_total_label.config(text=f"Your total: {player_total}")
         self.score_label.config(text=f"Score: {self.score}")
